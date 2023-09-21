@@ -3,6 +3,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
+public  enum AdjustWidth
+{
+    inside = 0, outside = 1,center = 2
+    
+}
 public class UIImageAnimator : MonoBehaviour
 {
     public Image leftImage; // Drag and drop the left UI image in the Inspector
@@ -38,7 +43,10 @@ public class UIImageAnimator : MonoBehaviour
         //setImageToCenter(playerHandPanel, leftImage.rectTransform);
         //  SetImageToLeftEdgeHorizontally(playerHandPanel, leftImage.rectTransform);
 
-        SetItemsAtleftAndRightEdges(playerHandPanel,leftImage.rectTransform,rightImage.rectTransform);
+       // SetItemsAtBottomleftAndBottomRightCornersMatchingCentersWithCorner(playerHandPanel, leftImage.rectTransform, rightImage.rectTransform);
+        SetItemsAtleftAndRightEdges(playerHandPanel,leftImage.rectTransform,rightImage.rectTransform,AdjustWidth.inside);
+
+
     }
     
    
@@ -100,22 +108,8 @@ public class UIImageAnimator : MonoBehaviour
     }
 
 
-    private void verticalCenter(RectTransform uiElementRectTransform, Image imageToPlace)
-    {
-        // Get the corners of the UI element in local space
-        Vector3[] corners = new Vector3[4];
-        uiElementRectTransform.GetLocalCorners(corners);
-
-        // Calculate the average y-coordinate of the top and bottom corners
-        float centerY = (corners[1].y + corners[2].y) / 2f;
-
-        // Set the image's position to the calculated vertical center
-        Vector3 imagePosition = new Vector3(imageToPlace.rectTransform.position.x, centerY, imageToPlace.rectTransform.position.z);
-        imageToPlace.rectTransform.position = imagePosition;
-    }
-
     // TESTED : SetItemsAtleftAndRightEdges of container
-    void SetItemsAtleftAndRightEdges(RectTransform container, RectTransform elementToPlaceLeft, RectTransform elementToPlaceRight) {
+    void SetItemsAtleftAndRightEdges(RectTransform container, RectTransform elementToPlaceLeft, RectTransform elementToPlaceRight, AdjustWidth adjustWidth = AdjustWidth.inside,bool adjustHeight = true) {
 
         float HalfWidthOfelementToPlaceLeft =( getScaledWidth(elementToPlaceLeft)/2f);
         float HalfWidthOfelementToPlaceRight = (getScaledWidth(elementToPlaceRight) / 2f);
@@ -123,8 +117,6 @@ public class UIImageAnimator : MonoBehaviour
         float HalfHeightOfelementToPlaceLeft = (getScaledHeight(elementToPlaceLeft) / 2f);
         float HalfHeightOfelementToPlaceRight = (getScaledHeight(elementToPlaceRight) / 2f);
 
-        print("scaled height : " + getScaledHeight(elementToPlaceLeft));
-        print("Normal height : " + (elementToPlaceLeft.rect.height));
 
         Vector3 panelPosition = container.position;
         float panelWidth = getScaledWidth(playerHandPanel);
@@ -134,30 +126,35 @@ public class UIImageAnimator : MonoBehaviour
         Vector3 leftPosition = new Vector3(getLeftEdge(container), yPosition, panelPosition.z);
         Vector3 rightPosition = new Vector3(getRightEdge(container), yPosition, panelPosition.z);
 
-        // width adjustment inside
-        //leftPosition.x += HalfWidthOfelementToPlaceLeft;
-        //rightPosition.x -= HalfWidthOfelementToPlaceRight;
-
-        //width adjustment outside
-        leftPosition.x -= HalfWidthOfelementToPlaceLeft;
-        rightPosition.x += HalfWidthOfelementToPlaceRight;
-
-        //// height adjustment 
-        //leftPosition.y += HalfHeightOfelementToPlaceLeft;
-        //rightPosition.y += HalfHeightOfelementToPlaceRight;
-
+        if (adjustWidth == AdjustWidth.inside)
+        {
+            // width adjustment inside
+            leftPosition.x += HalfWidthOfelementToPlaceLeft;
+            rightPosition.x -= HalfWidthOfelementToPlaceRight;
+        }
+        else if (adjustWidth == AdjustWidth.outside)
+        {
+            //width adjustment outside
+            leftPosition.x -= HalfWidthOfelementToPlaceLeft;
+            rightPosition.x += HalfWidthOfelementToPlaceRight;
+        }
 
         //// Set the positions of the left and right images
         elementToPlaceLeft.position = leftPosition;
         elementToPlaceRight.position = rightPosition;
 
-        // height adjustment 
-        SetItemAtVerticalCenter(container, elementToPlaceRight);
-        SetItemAtVerticalCenter(container, elementToPlaceLeft);
+        if (adjustHeight)
+        {
+
+            // height adjustment 
+            SetItemAtVerticalCenter(container, elementToPlaceRight);
+            SetItemAtVerticalCenter(container, elementToPlaceLeft);
+        }
 
     }
 
-    void SetItemsAtBottomleftAndBottomRightCorners(RectTransform container, RectTransform elementToPlaceLeft, RectTransform elementToPlaceRight)
+    //TESTED : Set Items At Bottom-left And Bottom-Right Corners Matching Centers of placed elements With Corner point
+    void SetItemsAtBottomleftAndBottomRightCornersMatchingCentersWithCorner(RectTransform container, RectTransform elementToPlaceLeft, RectTransform elementToPlaceRight)
     {
 
         Vector3 panelPosition = container.position;
@@ -176,41 +173,16 @@ public class UIImageAnimator : MonoBehaviour
 
     }
 
-    Vector3 get2(RectTransform panelRectTransform) {
+    
+    
 
-        // Get the position and dimensions of the panel
-        Vector3 panelPosition = panelRectTransform.position;
-        float panelWidth = panelRectTransform.rect.width;
-        float panelHeight = panelRectTransform.rect.height;
+    //public Vector2 getHalfWidthAndHeight(RectTransform uiElement) {
 
-        // Calculate the center position
-        Vector3 centerPosition = new Vector3(panelPosition.x - panelWidth / 2f, panelPosition.y - panelHeight / 2f, panelPosition.z);
-       
-        Debug.Log(" [ get2] Center position of the panel: " + centerPosition);
-        return centerPosition;
-    }
-    public Vector3 getCenterPositionOfUiElement(RectTransform uiElement) {
-        // Get the position and dimensions of the panel
-        Vector3 position = uiElement.position;
-        Vector3 scaled = getScaledWidthAndHeight(uiElement);
-        float width = scaled.x;
-        float height = scaled.y;
-
-        // Calculate the center position
-        Vector3 centerPosition = new Vector3(position.x, position.y, position.z);
-        centerPosition.x = width / 2f;
-        centerPosition.y = height / 2f;
-        print("center position : "+centerPosition);
-        return centerPosition;
-    }
-
-    public Vector2 getHalfWidthAndHeight(RectTransform uiElement) {
-
-        Vector2 widthAndHeight = Vector2.zero;
-        widthAndHeight.x = (uiElement.rect.width / 2f);
-        widthAndHeight.y = (uiElement.rect.height / 2f);
-        return widthAndHeight;
-    }
+    //    Vector2 widthAndHeight = Vector2.zero;
+    //    widthAndHeight.x = (uiElement.rect.width / 2f);
+    //    widthAndHeight.y = (uiElement.rect.height / 2f);
+    //    return widthAndHeight;
+    //}
 
     public float getLeftEdge(RectTransform uiElement) {
 
