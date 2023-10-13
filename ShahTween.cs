@@ -1,8 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.UI;
 
+public enum AdjustWidth
+{
+    inside = 0, outside = 1, center = 2
+
+}
 public  class ShahTween : MonoBehaviour
 {
     public static ShahTween instance;
@@ -376,6 +380,24 @@ public  class ShahTween : MonoBehaviour
         widthHeight.x = scaledWidth;
         widthHeight.y = scaledHeight;
         return widthHeight;
+    }
+    // TESTED
+    public Vector3 GetPositionForItemAtCenterPointOfTopEdge(RectTransform container, RectTransform elementToPlace)
+    { 
+        float halfWidth = (getScaledWidth(elementToPlace) / 2f);
+        // Calculate the bottom left corner and bottom right corner
+        Vector3[] corners = new Vector3[4];
+        container.GetWorldCorners(corners);
+
+        Vector3 bottomLeftCorner = corners[1]; // Bottom left corner
+        Vector3 bottomRightCorner = corners[2]; // Bottom right corner
+
+        // Calculate the center point at the bottom edge
+        Vector3 centerPoint = (bottomLeftCorner + bottomRightCorner) / 2f;
+        centerPoint.y -= halfWidth; 
+      
+        return centerPoint;
+
     }
 
     #endregion
