@@ -1,7 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 public class SingleAnimator : MonoBehaviour
 {
@@ -274,7 +275,6 @@ public class SingleAnimator : MonoBehaviour
         }
             foreach (GameObject card in bottomPlayerCards)
         {
-            print("2: " + bottomPlayerCards.Count);
             card.GetComponent<ShahAnimator>().StartAnimation(card.GetComponent<RectTransform>(), bottomTargetPosition, topBottomOffset);
 
             yield return new WaitForSeconds(wait);
@@ -291,6 +291,8 @@ public class SingleAnimator : MonoBehaviour
         Vector3 topTargetPosition = ShahTween.instance.GetPositionForItemAtCenterPointOfLeftEdge(topHand, topPlayerCards[0].GetComponent<RectTransform>());
         float BT_Offset = CalculateOffsetForBottomTop(topPlayerCards, topHand);
         float topBottomOffset = 0f;
+
+        topTargetPosition.x += CalculateStartPositionForCard(topPlayerCards, topHand);
         //check if padding should be added
         if (addPadding)
         {
@@ -312,6 +314,8 @@ public class SingleAnimator : MonoBehaviour
         Vector3 leftTargetPosition = ShahTween.instance.GetPositionForItemAtCenterPointOfTopEdge(leftHand, leftPlayerCards[0].GetComponent<RectTransform>());
         float LR_Offset = CalculateOffsetForLeftRight(leftPlayerCards, leftHand);
         float leftRightOffset = 0f;
+
+        leftTargetPosition.y -= CalculateStartPositionForLeftRightCard(leftPlayerCards, leftHand);
         //check if padding should be added
         if (addPadding)
         {
@@ -334,6 +338,9 @@ public class SingleAnimator : MonoBehaviour
         Vector3 rightTargetPosition = ShahTween.instance.GetPositionForItemAtCenterPointOfTopEdge(rightHand, rightPlayerCards[0].GetComponent<RectTransform>());
         float LR_Offset = CalculateOffsetForLeftRight(rightPlayerCards, rightHand);
         float leftRightOffset = 0f;
+
+        rightTargetPosition.y -= CalculateStartPositionForLeftRightCard(rightPlayerCards, rightHand);
+
         //check if padding should be added
         if (addPadding)
         {
@@ -467,13 +474,31 @@ public class SingleAnimator : MonoBehaviour
         }
         return startOffset;
     }
+    private float CalculateStartPositionForLeftRightCard(List<GameObject> listOfElements, RectTransform container)
+    {
+        float startOffset = 0f;
+        float elementWidth = ShahTween.instance.getScaledWidth(listOfElements[0].GetComponent<RectTransform>());
+       // float containerWidth = ShahTween.instance.getScaledWidth(container) - getPadding(elementWidth);
+        float containerHeight = (ShahTween.instance.GetHeightUsingCorners(container) - getPadding(elementWidth));
+        int totalElements = listOfElements.Count;
+
+        float totalOccupiedWidth = totalElements * elementWidth;
+        float availableOverlappingWidth = containerHeight - totalOccupiedWidth;
+        if (availableOverlappingWidth > 0)
+        {
+            startOffset = availableOverlappingWidth / 2.0f;
+        }
+        return startOffset;
+    }
+
+
     private float CalculateOffsetForBottomTop(List<GameObject> listOfElements, RectTransform container)
     {
         float offset = 0f;
 
         float elementWidth = ShahTween.instance.getScaledWidth(listOfElements[0].GetComponent<RectTransform>());
         float containerWidth = ShahTween.instance.getScaledWidth(container) - getPadding(elementWidth);
-       
+        print("BT : " + containerWidth);
         int totalElements = listOfElements.Count;
 
         float totalOccupiedWidth = totalElements * elementWidth;
@@ -495,16 +520,17 @@ public class SingleAnimator : MonoBehaviour
     private float CalculateOffsetForLeftRight(List<GameObject> listOfElements, RectTransform container)
     {
         float offset = 0f;
-      //  float elementHeight = ShahTween.instance.getScaledHeight(listOfElements[0].GetComponent<RectTransform>());
+        float elementHeight = ShahTween.instance.getScaledHeight(listOfElements[0].GetComponent<RectTransform>());
         float elementWidth = ShahTween.instance.getScaledWidth(listOfElements[0].GetComponent<RectTransform>());
-        float containerHeight = ShahTween.instance.getScaledHeight(container) - getPadding(elementWidth);
+        float containerHeight = (ShahTween.instance.GetHeightUsingCorners(container) - getPadding(elementWidth));
+        
         int totalElements = listOfElements.Count;
-     
 
         float totalOccupiedHeight = totalElements * elementWidth;//
         float availableOverlappingHeight = Mathf.Abs(containerHeight - totalOccupiedHeight);//
         float offsetForOverlap = availableOverlappingHeight / (totalElements - 1);//
-
+      
+        
         if ((totalOccupiedHeight < containerHeight) )//
         {
           
@@ -512,11 +538,14 @@ public class SingleAnimator : MonoBehaviour
         }
         else
         {
+           
             offset = Mathf.Abs((elementWidth - offsetForOverlap));//
+
         }
         return offset;
 
     }
+    
     private float getPadding(float elementWidth)
     {
         if (!addPadding)
