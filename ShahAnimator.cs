@@ -1,6 +1,6 @@
 using System.Collections;
 using UnityEngine;
-
+//*V8
 public class ShahAnimator : MonoBehaviour
 {
     float animationDuration = 0.25f;
