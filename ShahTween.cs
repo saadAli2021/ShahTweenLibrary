@@ -399,6 +399,16 @@ public  class ShahTween : MonoBehaviour
         return centerPoint;
 
     }
+   public float GetHeightUsingCorners(RectTransform rectTransform)
+    {
+        Vector3[] worldCorners = new Vector3[4];
 
+        // Get the world space positions of the corners
+        rectTransform.GetWorldCorners(worldCorners);
+
+        // Calculate the height based on the top and bottom corners
+        float height = worldCorners[1].y - worldCorners[0].y;
+        return height;
+    }
     #endregion
 }
